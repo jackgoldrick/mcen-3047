@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import torch as tc
 import pandas as pd
 import os
-import csv
+
 
 # I Like Classes
 class Set1:
@@ -73,18 +73,15 @@ class Set1:
                 sample_rate, recording = wav.read('../../data/freyja.wav', 'rb')
                 self.plot_audio_voltage(recording=recording, fs=sample_rate)
                 self.plot_audio_fft(recording, fs=sample_rate)
-                lsb = self.get_nlsb(recording)
-                print(f"LSB: {np.ceil(lsb)}")
-                V_fs = self.get_range(recording)
-                print(f"V_fs: {V_fs}")
             else:
                 recording = self.record_audio()
                 self.plot_audio_voltage(recording)
                 self.plot_audio_fft(recording)
-                lsb = self.get_nlsb(recording)
-                print(f"LSB: {np.ceil(lsb)}")
-                V_fs = self.get_range(recording)
-                print(f"V_fs: {V_fs}")
+                
+            lsb = self.get_nlsb(recording)
+            print(f"LSB: {np.ceil(lsb)}")
+            V_fs = self.get_range(recording)
+            print(f"V_fs: {V_fs}")
             
     class Problem2:
         @staticmethod
