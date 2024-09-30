@@ -165,7 +165,10 @@ def param_map(coeff_V, coeff_P, order=1):
     return (u @ d_inv @ coeff_V).numpy()
 
 
-
+def calculate_percent_error(output, estimation):
+    diff_vect = output - estimation
+    return (diff_vect / output) * 100
+    
 
 def main(order=1):
     voltage, time = tensorize_data('../data/drain.csv')
@@ -179,7 +182,7 @@ def main(order=1):
     cal_lin_height = pressure_to_height(pressure=cal_lin_pressure)
     cal_nlin_height = pressure_to_height(pressure=cal_nlin_pressure)
     
-    cal_coeff_P, cal_lin_out_est_P, cal_r_squared_P = least_squares(input=time, output=tc.tensor(cal_lin_pressure, dtype=tc.float), order=order, resid=False)
+    cal_coeff_P, _, _ = least_squares(input=time, output=tc.tensor(cal_lin_pressure, dtype=tc.float), order=order, resid=False)
     
     cal_height_data = pressure_to_height(pressure=calibration_curve(output=voltage))
     cal_pressure_data = calibration_curve(output=voltage)
@@ -191,7 +194,7 @@ def main(order=1):
     print(f'R-squared: {r_squared}')
     
     print(f"Non-linear Least Squares")
-    print(f'Coefficients: {final_coeff}')
+    print(f'NonLinear Coefficients: {final_coeff}')
     print(f'Error: {error}')
     print(f'Error Sequence: {error_seq}')
     
@@ -216,6 +219,14 @@ def main(order=1):
     plt.legend()
     plt.show()
     
+    plt.figure()
+    plt.title('Percent Error of Height Estimation')
+    plt.plot(time, calculate_percent_error(output=cal_height_data, estimation=cal_lin_height), label='Linear Percent Error')
+    plt.plot(time, calculate_percent_error(output=cal_height_data, estimation=cal_nlin_height), label='NonLinear Percent Error')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Percent Error [%]')
+    plt.legend()
+    plt.show()
     
     
     plt.figure() 
