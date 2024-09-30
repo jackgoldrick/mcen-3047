@@ -1,0 +1,202 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{caption}
+\usepackage{wrapfig}
+\usepackage{amsmath, amsthm, amsfonts, amssymb}
+\usepackage{tikz-cd}
+\usepackage{geometry}
+\geometry{margin=1in}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newtheorem{example}{Example}
+
+
+
+
+
+\title{MCEN 3047  - Lab 2}
+\author{Mackenzie Sievers, Jack Goldrick, Thomas Brentano }
+\date{September 2024}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section{Abstract}
+	\section{Background}
+	In this lab, we are looking into the height of water as it drains from a water bottle, specifically, looking at the hydrostatic pressure in the water bottle.  Hydrostatic pressure can be modeled using Bernoulli's Equation is a differential linear differnetial system. The data is measured from an uncalibrated tranducer will map voltage to height bijectively.  Inorder to explain this bijection sufficiently, we will give a brief explanation on the categorical framework that underlies system analysis and measurement.
+	
+	
+	
+	
+	% phenomena explained by Bernoulli's equation through the large pressure and velocity difference at the top and the bottom of the basin.
+	
+	
+	
+	%  Looking at this schematic, water is flowing out of a large basin, through a small hole near the bottom. We assume the pressure at the bottom to be greater than the pressure at the top, and the velocity at the bottom greater than the velocity at the top. 
+	
+	
+
+	
+	
+	
+	\section{Background through Category Theory}
+	
+	\subsection{Enriched Base Categories and Displayed Categories }
+	
+	Let $\mathcal{D}$ be the category of dimensions, where:
+	\begin{itemize}
+		\item \textbf{Objects}: Fundamental dimensions $[L]$, $[M]$, $[T]$, etc.
+		\item \textbf{Morphisms}: Derivation and Identity morphisms.
+		\item \textbf{Abelian Enrichement} The derivation morphism is enriched by the Abelian group structure of a dimensioned vector space that obeys morphism associativity.
+	\end{itemize}
+	
+	
+	\noindent Let $\mathcal{U}$ be the Displayed Category of Variable where:
+	\begin{itemize}
+		\item \textbf{Objects}: Defined by a set of measurable physical variables, such as:
+		\subitem[i.e.] Density, Velocity, Yield Stress, Flow Stress, etc.
+		
+		\item \textbf{Morphisms}: 
+		\begin{itemize}
+			\item $Combination \ Morphism$: Creates different measurable representations (Creating weight from mass and gravity) of the Displayed Category.
+		\end{itemize}
+		
+		\begin{remark}
+			This displayed categorical structure has more morphisms, universal objects and elements, but they are not relevant to this topic.
+		\end{remark}
+		
+		
+	\end{itemize}
+	
+	
+	
+	
+	
+	
+	\subsection{Natural Isomorphism Between Displayed Categories as Unit Conversions}
+	
+	\begin{definition}[Unit Conversion Natural Isomorphism]
+		A \emph{natural isomorphism} $\eta: F_{\text{SI}} \Rightarrow F_{\text{Imperial}}$ consists of isomorphisms $\eta_{[D]}$ for each dimension $[D] \in \mathcal{D}$:
+		
+		$$\eta_{[D]}: F_{\text{SI}}([D]) \Rightarrow F_{\text{Imperial}}([D])$$
+		where $\eta_{[D]}$ represents the unit conversion Metric and Imperial units for dimension $[D]$.
+		
+		\begin{remark}
+			Each $\eta_{[D]}$ is an isomorphism because there exists an inverse mapping: Converting back to the original units.
+		\end{remark}
+		
+	\end{definition}
+	
+	\subsection{Functor Category}
+	
+	Let $\mathcal{U}_{\text{SI}}$ and $\mathcal{U}_{\text{IMP}}$ represent the Displayed Categories of Variables in the Metric and Imperial unit systems.  Thus the functor category $[\mathcal{U}_{\text{SI}}, \mathcal{U}_{\text{IMP}}]$, where:
+	\begin{itemize}
+		\item \textbf{Objects}: Functors that map physical variables from $\mathcal{U}_{\text{SI}}$ (Metric units) to $\mathcal{U}_{\text{IMP}}$ (Imperial units), preserving dimensional structure.
+		\item \textbf{Morphisms}: Natural transformations between functors, representing consistent conversions between different unit systems.
+	\end{itemize}
+	
+	\begin{remark}
+		The categories \( \mathcal{U}_{\text{SI}} \) and \( \mathcal{U}_{\text{IMP}} \) are equivalent Displayed Categories, since A functor, \( F \in [\mathcal{U}_{\text{SI}}, \mathcal{U}_{\text{IMP}}] \), is fully faithful and essentially surjective. 
+	\end{remark}
+	
+	\subsection{Transducers as Universal Objects of a Functor Category}
+	
+	Let $\mathcal{U}$ be a Displayed Category of Variables and $\mathcal{M}$ be the category of measurable signal. A transducer is a device that converts an object of a displayed category of variables from $\mathcal{U}$ into a signal in $\mathcal{M}$.
+	
+	
+	
+	\begin{definition}[Transducer Functor]
+		Let $\mathcal{U}$  follow its normal definition and $\mathcal{M}$ be the category of measurable signals of $\mathcal{U}$. A \emph{transducer functor} $F: \mathcal{U} \Rightarrow \mathcal{M}$ maps objects and morphisms from $\mathcal{U}$ to $\mathcal{M}$, representing the transduction process.
+	\end{definition}
+	
+	In the functor category $[\mathcal{U}, \mathcal{M}]$, a transducer serves as an universal object. That is, $ \forall V \in \mathcal{U}$, $\exists! f_{[\mathcal{U}, \mathcal{M}]}: V  \Rightarrow T$ (transduction process) to the measurable signal space $T \in \mathcal{M}$.
+	
+	\begin{proposition}
+		A $universal \ transducer$ is an object $T \in \mathcal{M}$ such that for every physical variable $V \in \mathcal{U}$, there exists a unique morphism (transduction process) $f_{V}: V \Rightarrow T$, mapping the physical variable into a measurable signal.
+	\end{proposition}
+	
+	
+	\begin{proof}
+		\hfill \break
+		\begin{itemize}
+			
+			\item \textbf{Existence:} 
+			$\forall V \in \mathcal{U}$, the transducer functor provides a natural isomorphism to  a measurable signal in $\mathcal{M}$. This can be confirmed by transducer design, since there is always a way to map any measurable physical variable, like pressure into a common signal space like voltage. Thus, $\forall V \in \mathcal{V}$, a transduction process $f_V: V \to T$ exists.
+			
+			
+			\begin{definition}[Transducer Calibration as a Natural Transformation]
+				Let $F, G: \mathcal{U} \rightarrow \mathcal{M}$ be transducer functors representing two different calibrations or configurations of a transducer. A \emph{natural transformation} $\eta: F \Rightarrow G$ assigns to each object $V$ in $\mathcal{U}$ a morphism $\eta_V: F(V) \rightarrow G(V)$ in $\mathcal{M}$, representing the adjustment between the two configurations.
+			\end{definition}
+			
+			\item \textbf{Uniqueness:} 
+			
+			The Existence of the calibration as Equalizing Natural Isomorphism, a proper transduction, $f_V: V \to T$ defines a specific process for converting the physical variable into a measurable signal, following the composition of Calibration specific to $V \in \mathcal{U}$. The physical properties of the transducer, like calibration, ensure $\forall V \in \mathcal{V}, \exists ! f_V: V \to T$.
+			
+			Therefore, $T$,  acts as an universal object in the functor category $[\mathcal{U}, \mathcal{M}]$. The existence and uniqueness of the morphisms $f_V: V \to T$ for every \( V \in \mathcal{V} \) guarantee that the transducer is a valid, universal tool for converting physical variables into measurable signals.
+			
+			$$\forall V \in \mathcal{V}, \exists ! f_V: V \to T$$
+		\end{itemize}
+		
+		Therefor, transducer serves as a universal object for measurement across physical variables, ensuring that every variable can be accurately and uniquely measured through its output signal.
+		
+		
+		
+	\end{proof}
+	
+	
+	Here we have shown mathematically that any experimental procedure that uses the transducers properly will accurately capture the structure behind the governing dynamics of this simple system.  The following procedure and results will delineate how the group was able to measure the output and determine the behavior of the simple ordinary differential system.
+	
+	
+	\section{Procedures}
+	
+	
+	
+	
+	
+	Equations Used:
+	
+	\textbf{Hydrostatic Pressure:}
+	\[
+	P(h) = \rho g h 
+	\]
+	\begin{itemize}
+		\item \(\rho\) - density of water
+		\item g - acceleration of gravity
+		\item h - height 
+	\end{itemize}
+	
+	\textbf{Bernoulli's Equation:}
+	
+	\[
+	P_1 + \frac{1}{2}\rho v_1^2 + \rho g h_1 = P_2 + \frac{1}{2}\rho v_2^1 + \rho g h_2
+	\]
+	\begin{itemize}
+		\item v - velocity 
+	\end{itemize}
+	
+	\textbf{differential Equation for Height as a function of time:}
+	
+	\[\frac{dh}{dt} = -\sqrt{2g} \frac{d^2}{D^2} C_d \sqrt{h}\]
+	\begin{itemize}
+		\item \(C_d\) - drag $\rightarrow$ Range: \(0.6 < C_d < 0.7\)
+	\end{itemize}
+	
+	
+	In this lab we used the Honeywell ABP series pressure sensor. This sensor was chosen specifically for its sensitivity to pressure in the range of 0 mbar to 30 mbar. We put this pressure sensor near the bottom of the Nalgene water bottle across from the drain hole. Before we started the experiment we added 40 mL of laundry detergent to the water bottle to reduce surface tension. Then we filled the water bottle level to 600, 800, 1000, 1200, and 1400 mL and took the voltage read out at those points. We then pulled the drain plug and plotted the voltage read out as it drained. 
+	
+	\section{Results and Discussion}
+	\section{Conclusion}
+	
+	
+	
+	
+	
+	
+\end{document}
