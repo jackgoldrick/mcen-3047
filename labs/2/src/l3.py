@@ -94,19 +94,19 @@ def least_squares(input, output, order=1, resid=False, time_span=None):
     
     return coeff.numpy(), out_est.numpy(), calc_error(tensor=A, output=output, coeff=coeff)
     
-
-def non_linear_least_squares(input, output, h_0=15, tau=100, tol = 1e-7):
+    
+def non_linear_least_squares(input, output, h_0=1, tau=100, tol = 1e-7, n=1, tau_v=None):
     
     error = 100
     error_seq = 100
 
-    resid = output - h_0 * tc.exp(- input / tau)
+    resid = output - h_0 * tc.exp(- input**n / tau)
     
     while error_seq > tol:
         
         
-        dh_0 = tc.exp(-input / tau)
-        dtau = h_0 * input * tc.exp(-input / tau) * tau**(-2)
+        dh_0 = tc.exp(-input**n / tau)
+        dtau = h_0 * input**n * tc.exp(-input**n / tau) * tau**(-2)
         
         J = tc.stack([dh_0, dtau], dim=1)
         
@@ -117,8 +117,8 @@ def non_linear_least_squares(input, output, h_0=15, tau=100, tol = 1e-7):
         
         h_0 = h_0 + del_coeff[0]
         tau = tau + del_coeff[1]
-        
-        resid = output - h_0 * tc.exp(- input / tau)
+
+        resid = output - h_0 * tc.exp(- input**n / tau)
         # import pdb; pdb.set_trace()
         error = tc.sqrt(resid.unsqueeze(0) @ resid)
         
@@ -127,9 +127,10 @@ def non_linear_least_squares(input, output, h_0=15, tau=100, tol = 1e-7):
         
     
         
-        
+    if tau_v is not None:
+        tau = tau_v
     final_coeff = [h_0, tau]
-    output = h_0 * tc.exp(- input / tau)
+    output = h_0 * tc.exp(- input**n / tau)
     
     return final_coeff, output, error, error_seq
 
@@ -170,28 +171,47 @@ def calculate_percent_error(output, estimation):
     return (diff_vect / output) * 100
     
 
-def main(order=1):
+def main(order=1, n=1):
     voltage, time = tensorize_data('../data/drain.csv')
     voltage_volume, volume = tensorize_data('../data/cal.csv')
     coeff_volt, lin_out_est, r_squared = least_squares(input=time, output=voltage, order=order, resid=False)
     final_coeff, nlin_out_est, error, error_seq = non_linear_least_squares(input=time, output=voltage)
-        
+    
     cal_lin_pressure = calibration_curve(output=lin_out_est)
     cal_nlin_pressure = calibration_curve(output=nlin_out_est)
     
     cal_lin_height = pressure_to_height(pressure=cal_lin_pressure)
     cal_nlin_height = pressure_to_height(pressure=cal_nlin_pressure)
-    
+    print(f"n = {n}")
     cal_coeff_P, _, _ = least_squares(input=time, output=tc.tensor(cal_lin_pressure, dtype=tc.float), order=order, resid=False)
     
     cal_height_data = pressure_to_height(pressure=calibration_curve(output=voltage))
     cal_pressure_data = calibration_curve(output=voltage)
+    cal_coeff, nlin_out_cal_est, error_cal, error_seq_cal = non_linear_least_squares(input=time, output=cal_height_data, n=n)
+    
+    coeff_sol, sol_out, r_squared_sol = least_squares(input=time, output=cal_height_data, order=2, resid=False)
+    
+    
+    err_cal_vec = cal_height_data - nlin_out_cal_est
+    est_rror_cal_squared = err_cal_vec @ err_cal_vec
+    
+    
+    error_vec = cal_height_data - cal_nlin_height
+    error_squared = error_vec @ error_vec
+    print(f"Calibrated Height Data Coefficients: {cal_coeff}")
+    print(f"Calibrated Residual R-squared: {1 - error_squared}")
+    print(f"Height Regression Err: {1 - est_rror_cal_squared}")
+    
     
     print(f"Calibrated Pressure Coefficients: {cal_coeff_P}")
     
     print(f"linear Least Squares of order {order}") 
     print(f'Coefficients: {coeff_volt}')
     print(f'R-squared: {r_squared}')
+    
+    print(f"Height linear Least Squares of order {2}") 
+    print(f'Coefficients: {coeff_sol}')
+    print(f'R-squared: {r_squared_sol}')
     
     print(f"Non-linear Least Squares")
     print(f'NonLinear Coefficients: {final_coeff}')
@@ -212,8 +232,8 @@ def main(order=1):
     plt.figure()
     plt.title('Pressure Data')
     plt.plot(time, cal_lin_pressure, label='Calibrated Linear Pressure')
-    plt.plot(time, cal_nlin_pressure, label='Calibrated NonLinear Pressure')
-    plt.plot(time, cal_pressure_data, label='Calibrated Pressure Data')
+    plt.plot(time, cal_nlin_pressure, label='Calibrated NonLinear Pressure', linewidth=3)
+    plt.plot(time, cal_pressure_data, label='Calibrated Pressure Data', linewidth=1)
     plt.xlabel('Time [s]')
     plt.ylabel('Pressure [Pa]')
     plt.legend()
@@ -223,6 +243,7 @@ def main(order=1):
     plt.title('Percent Error of Height Estimation')
     plt.plot(time, calculate_percent_error(output=cal_height_data, estimation=cal_lin_height), label='Linear Percent Error')
     plt.plot(time, calculate_percent_error(output=cal_height_data, estimation=cal_nlin_height), label='NonLinear Percent Error')
+    plt.plot(time, calculate_percent_error(output=cal_height_data, estimation=sol_out), label='Quadratic Percent Error')
     plt.xlabel('Time [s]')
     plt.ylabel('Percent Error [%]')
     plt.legend()
@@ -231,8 +252,8 @@ def main(order=1):
     
     plt.figure() 
     plt.title('Voltage Estimation')
-    plt.plot(time, nlin_out_est, label='NonLinear Voltage')
-    plt.plot(time, voltage, label='Voltage Data')
+    plt.plot(time, voltage, label='Voltage Data', linewidth=1)
+    plt.plot(time, nlin_out_est, label='NonLinear Voltage', linewidth=3)
     plt.plot(time, lin_out_est, label='Linear Voltage')
     plt.xlabel('Time [s]')
     plt.ylabel('Voltage [V]')
@@ -241,9 +262,10 @@ def main(order=1):
     
     plt.figure() 
     plt.title('Height Estimation')
-    plt.plot(time, cal_height_data, label='Calibrated Height Data')
+    plt.plot(time, cal_height_data, label='Calibrated Height Data', linewidth=2)
     plt.plot(time, cal_lin_height, label='Calibrated Linear Height')
-    plt.plot(time, cal_nlin_height, label='Calibrated NonLinear Height')
+    plt.plot(time, sol_out, label='Quadratic Solution Height', linewidth=2)
+    plt.plot(time, cal_nlin_height, label='Calibrated NonLinear Height', linewidth=1)
     plt.xlabel('Time [s]')
     plt.ylabel('Height [m]')
     plt.legend()
@@ -252,4 +274,4 @@ def main(order=1):
 # main()
 
 if __name__ == "__main__":
-   main(order=int(sys.argv[1]))
+   main(order=int(sys.argv[1]), n=float(sys.argv[2]))

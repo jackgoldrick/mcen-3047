@@ -19,7 +19,13 @@ def quick_scatter(df, curve=None, title=None, text=None):
                     bbox = dict(facecolor = 'red', alpha = 0.5))
     plt.show()
     
-    
+def resid_scatter(resids, input):
+    plt.plot(input, resids, '*')
+    plt.plot(input, np.zeros(len(input)))
+    plt.title("Euclidean Distance of Each Estimate")
+    plt.ylabel("2-Norm Distance")
+    plt.xlabel("Diameter [mm]")
+    plt.show()
     
 # Create a tensor from a csv file
 def tensorize_df(df):
@@ -51,7 +57,7 @@ def non_linear_least_squares(input, output, h_0=15, tau=100, tol = 1e-7):
         J_dual = J.mT
         
         del_coeff = tc.inverse(J_dual @ J) @ J_dual @ resid
-        print(del_coeff)
+        # print(del_coeff)
         
         h_0 = h_0 + del_coeff[0]
         tau = tau + del_coeff[1]
@@ -109,7 +115,7 @@ def calc_error(tensor, output,  coeff, resid=False):
     # r_squared = 1 - (tc.norm(error_vect) / tc.norm(output))
     
 
-def least_squares(input, output, order=1, resid=False):
+def least_squares(input, output, order=1, resid=False, time_span=None):
     
     """ 
     -- The alg represents the equation Ax = b
@@ -135,7 +141,10 @@ def least_squares(input, output, order=1, resid=False):
     
     # print(coeff)
     
-    out_est = A @ coeff
+    if time_span is None:
+        out_est = A @ coeff
+    else:
+        time = tc.linspace(start=time_span[0],steps=time_span[1] , end=time_span[2])
     
     if resid:
         return coeff.numpy(), out_est.numpy(), calc_error(tensor=A, output=output, coeff=coeff, resid=True)
@@ -158,7 +167,7 @@ def estimate_spring(x, t, initial_guess=None):
 
     # Extract estimated parameters
     A_est, phi_est, beta_est, omega_est = params
-    print(params)
+    # print(params)
     
     return A_est, phi_est, beta_est, omega_est
     
@@ -167,9 +176,19 @@ def problem_1(order=1):
     df = get_df("../data/p1.csv")
     quick_scatter(df, title="strength v. diameter")
     stre, dia = tensorize_df(df)
-    _, output, error = least_squares(output=stre, input=dia, order=order)
+    coeff, out_est, error = least_squares(output=stre, input=dia, order=order)
     notes = f"R^2: {error.numpy()}"
-    quick_scatter(df, title="strength v. diameter", curve=[dia, output], text=notes)
+    quick_scatter(df, title="strength v. diameter", curve=[dia, out_est], text=notes)
+    time = tc.linspace(start=5, steps=100, end=6)
+    
+    A = tc.tensor([[i**j for j in range(order+1)] for i in time], dtype=tc.float)
+    est_out = A @ coeff
+    resid = stre.numpy() - out_est
+    resid_scatter(input=dia.numpy(), resids=resid)
+    # print(time[50])
+    print(f"Strength change for dx = .3mm: {coeff[1] * .3 }")
+    print(f"Strength at 5.5mm: {est_out[50]}")
+    
     
     
     
@@ -184,7 +203,7 @@ def problem_2():
     
     quick_scatter(df, curve=[time, output], title="Height v. Time")
     
-    print(final_coeff)
+    print(f"Time constant: {final_coeff[1].numpy()}")
     
     
 def problem_3():
@@ -192,7 +211,7 @@ def problem_3():
     
     x, t = tensorize_df(df)
     
-    print(t)
+    # print(t)
     # import pdb; pdb.set_trace()
     
     _, _, b_est, omega_d_est = estimate_spring(x=x, t=t)
@@ -205,7 +224,7 @@ def problem_3():
     
 
 def main():
-    # problem_1()
-    # problem_2()
+    problem_1()
+    problem_2()
     problem_3()
 main()
