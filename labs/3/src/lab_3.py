@@ -92,7 +92,7 @@ def estimate_h(input, output, T_inf=28,rho=[7800, 250], C_p=[434, 20], D=[25.4e-
     uncert_grad_mat = calculate_h_grad(t=input, T_est=out_est * .1e-2, T_init=T_inf, rho=rho[0], C_p=C_p[0], D=D[0])
 
     # uncert_grad_mat = uncert_grad_mat / reg
-    uncert_grad_mat = (uncert_grad_mat.mT @ uncert_grad_mat)
+    # uncert_grad_mat = (uncert_grad_mat.mT @ uncert_grad_mat)
     reg = (((pp.p_power(p=2, matrix=uncert_grad_mat, type=tc.float)[0]).numpy())[0])
     print(reg)
     uncert_grad_mat = uncert_grad_mat / reg
