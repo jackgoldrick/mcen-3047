@@ -103,7 +103,7 @@ def estimate_h(input, output, T_inf=28,rho=[7800, 250], C_p=[434, 20], D=[25.4e-
     
     print(norm_measure)
     # sig = tc.trace(uncert_inner_prod) / tc.linalg.matrix_rank(uncert_inner_prod)
-    cov_total = cov_T + uncert_inner_prod * (norm_measure**2) # / output.shape[1])
+    cov_total = cov_T + uncert_inner_prod * (norm_measure**1 / output.shape[1])
     # print(output.shape[1])
     cov_param = jac @ cov_total @ jac.mT
     # print(cov_param)
@@ -143,7 +143,7 @@ def calculate_h(alpha=22.5e6, upsilon=15.89e6, k=26.3e3, Pr=.707, D=25.4e-3, T_i
     
     return h
     
-    
+
     
 def main():
     '''
