@@ -22,7 +22,7 @@ def tensorize_frame(df, input_dim=0, output_dim=1):
 
 
 
-def calculate_h_grad(t, T_est, T_init=76.7811, rho=7800, C_p=434, D=25.4):
+def calculate_h_grad(t, T_est, T_init=76.7811, rho=7800, C_p=434, D=25.4e-3):
     """Creates a gradient matrix for the heat transfer coefficient. That is size (t x T_est) = (t x t)"""
     t = t.reshape(1, -1)  # Ensure t is a row vector
     T_est = T_est.reshape(-1, 1)  # Ensure T_est is a column vector
@@ -85,23 +85,25 @@ def estimate_h(input, output, T_inf=28,rho=[7800, 250], C_p=[434, 20], D=[25.4e-
     sigma = (((sigma_daq**2) * (output @ output.mT) / len(output))[0]).numpy()
     # print(jac.shape)
     cov_meas = (sigma_daq**2) * (output.mT @ output) 
-    norm_measure = (pp.p_power(p=2, matrix=cov_meas, type=tc.float)[0]).numpy()
+    norm_measure = (((pp.p_power(p=2, matrix=cov_meas, type=tc.float)[0]).numpy())[0])
     cov_meas =  cov_meas / sigma[0]
     
+    # print(norm_measure)
+    # print(sigma)
     
-    uncert_grad_mat = calculate_h_grad(t=input, T_est=out_est * .1e-2, T_init=T_inf, rho=rho[0], C_p=C_p[0], D=D[0])
+    uncert_grad_mat = calculate_h_grad(t=input, T_est=out_est, T_init=T_inf, rho=rho[0], C_p=C_p[0], D=D[0])
 
     # uncert_grad_mat = uncert_grad_mat / reg
     # uncert_grad_mat = (uncert_grad_mat.mT @ uncert_grad_mat)
     reg = (((pp.p_power(p=2, matrix=uncert_grad_mat, type=tc.float)[0]).numpy())[0])
-    print(reg)
+    # print(reg)
     uncert_grad_mat = uncert_grad_mat / reg
     # print(uncert_grad_mat)
     uncert_inner_prod = (uncert_grad_mat @ cov_meas @ uncert_grad_mat.mT)
     
-    
+    print(norm_measure)
     # sig = tc.trace(uncert_inner_prod) / tc.linalg.matrix_rank(uncert_inner_prod)
-    cov_total = cov_T + uncert_inner_prod * (sigma[0] / output.shape[1])
+    cov_total = cov_T + uncert_inner_prod * (norm_measure**2) # / output.shape[1])
     # print(output.shape[1])
     cov_param = jac @ cov_total @ jac.mT
     # print(cov_param)
@@ -164,7 +166,7 @@ def main():
     print(f'The Calculated heat transfer coefficient is {calculate_h():.4f} [W/m-K]')
     
     print(f'The heat transfer coefficient of water is {h_water:.4f} [W/m-K] with an uncertainty of {uncert_h_water:.8f} [W/m-K].')
-    print(f'The Calculated heat transfer coefficient is {calculate_h(alpha=1.4558e-7, upsilon=1.0023e-6, k=0.607, Pr=6.9, T_0=82.475, T_inf=23):.4f} [W/m-K]')
+    print(f'The Calculated heat transfer coefficient is {calculate_h(alpha=1.4558e-7, upsilon=1.0023e-6, k=0.607, Pr=6.9, T_0=82.475, T_inf=23, D=25.4e-3):.4f} [W/m-K]')
     
 
     plot_temp(input_air, output_air, out_est_air.squeeze(0), title='Temperature vs. Time (Air)')
