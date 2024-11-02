@@ -1,0 +1,52 @@
+\documentclass[]{report}
+
+% All Dependencies
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{wasysym}
+
+
+% Title Page
+\title{MATH 4820 - Homework 4}
+\author{Jack Reilly Goldrick}
+
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+This Lab focuses on data acquisition and theory validation with an emphasis on parameter estimation.  The Data for this lab was not subjected to measurement uncertainty thus providing a reasonable estimation of the system's overall dynamics.  Washer's and a flat beam were used to simulate the deflection singularity function.  Thus the following lab will discuss the procedure used and results analyzed.
+\end{abstract}
+
+
+\section{NonLinear Fit of Parameters and Uncertainty}
+
+NonLinear regressions are  a highly capable class of modeling algorithms used to determine parameters that are not linear coefficients.  Newton-Rapson methods combined with projection matrices define the algorithm used in this lab.  As we know from previous labs,  the least squares solutions minimizes the norm of a residual vector.   Thus we  can create a Jacobian Matrix  from the following expected solution to the governing dynamics of the problem:  
+
+$$  y(t) = A e^{ (\sigma  \ +/- \  \omega_d i) t} $$
+
+Using Euler's Identity we can rewrite the equation as
+
+
+$$ y(t) = A e^{ (\sigma  t)} \cos(\omega_d + \phi) $$
+
+With a convention of compression we can exploit an isometric isomorphism between $\mathbb{C}  \  \text{and}  \  \mathbb{R}^2$.  We can take the norm of the corresponding vector in $\mathbb{R}^2$ to find the natural frequency of the system.   Since there is no uncertainty in the measurement, the  norm of the covariance matrix was used to find the uncertainty from the model estimation.  
+
+
+\section{Conclusion}
+
+
+In this lab we looked at the process of validating theory from fitting parameters of NonLinear model.  Uncertainty that propagates from measuring device played an important role in the determination of reliability.  
+
+
+
+
+
+
+
+
+\end{document}

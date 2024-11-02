@@ -1,0 +1,1 @@
+writetimetable(eightwashers,eightwashers)
